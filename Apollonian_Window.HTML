@@ -11,12 +11,13 @@
 		<script src="js/three.js"></script>
 		<script>
 
-			// smothness of spheres
-			const aw_renderHeight = 36;
-			const aw_renderWidth = aw_renderHeight;
-			const whirl = 90; //degrees cycled for color hue
+			//Constants
+			const aw_renderHeight = 36; // smothness of spheres
+			const aw_renderWidth = aw_renderHeight; // smothness of spheres
+			//const whirl = 90; //degrees cycled for color hue
 			const group = new THREE.Group();
-			const aw_maxiumBend = 1000000; // maximum bend for a recursively drawn pappus chain
+			const aw_maxiumBend = 100; // maximum bend for a recursively drawn pappus chain
+			var depth = 100; // how deep into the generating recursion we want to go.
 
 
 			// Setting the Scene... 
@@ -29,17 +30,32 @@
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );
 
-			//Create our Matrix of "Circle" coordinates
+			//Create our Matrix of "Circle" coordinates for each quadrant in 2D
 			const M = new THREE.Matrix4();
+			const N = new THREE.Matrix4();
+			const O = new THREE.Matrix4();
+			const P = new THREE.Matrix4();
 
 			M.set(
-			//	2, 1, 0, 0,
-			//    3, 0, 2, 0,
- 			//    6, 3, 4, 0,
+				2, 1, 0, 0,
+			    3, 0, 2, 0,
  			    -1, 0, 0, 0,
- 			    2, -1, 0, 0,
- 			    2, 1, 0, 0,
- 			    3, 0, 2, 0);
+ 			    6, 3, 4, 0,);
+			N.set(
+				2, 1, 0, 0,
+			    3, 0, -2, 0,
+ 			    -1, 0, 0, 0,
+ 			    6, 3, -4, 0,);
+			O.set(
+				2, -1, 0, 0,
+			    3, 0, 2, 0,
+ 			    -1, 0, 0, 0,
+ 			    6, -3, 4, 0,);
+			P.set(
+				2, -1, 0, 0,
+			    3, 0, -2, 0,
+ 			    -1, 0, 0, 0,
+ 			    6, -3, -4, 0,);
 
 			//Boyd's Tranformations 
 			const apollonianTransformA = new THREE.Matrix4();
@@ -67,14 +83,14 @@
 			// Draws a sphere given 3D circle coordinates -- a (signed!) radius, and n^3 coordiantes to euclidean geometry for THREE.js
 			function aw_drawSphere(aw_r, aw_x, aw_y, aw_z) {
 				
+				//###Color Stuff for later... We want Hue to be around the X axis, and Light to be along it.
 				//const light = ((aw_x/aw_r)+(1/2))*100;
 				//const saturation = ((aw_x/aw_r)+(1/2))*100;
 				//const hue = Math.atan2((aw_z/aw_r),(aw_y/aw_r))*(180 / Math.PI);
-	
 				//const color6 = new THREE.Color("hsl(30, 50%, 50%)");
 	
 				const euclidean_geometry = new THREE.SphereGeometry(1/aw_r, aw_renderWidth, aw_renderHeight);
-				const material = new THREE.MeshNormalMaterial( { transparent: true, opacity: .45 } );
+				const material = new THREE.MeshNormalMaterial( { transparent: true, opacity: .25 } );
 				const sphere = new THREE.Mesh( euclidean_geometry, material );
 	
 		    	sphere.position.x = aw_x/aw_r;
@@ -92,82 +108,62 @@
 				const aw_B = aw_drawSphere(m.elements[1],m.elements[5],m.elements[9],m.elements[13]);
 				const aw_C = aw_drawSphere(m.elements[2],m.elements[6],m.elements[10],m.elements[14]);
 				const aw_D = aw_drawSphere(m.elements[3],m.elements[7],m.elements[11],m.elements[15]);
-				//const aw_E = aw_drawSphere(14, 5, 12, 0);
+				return(m);
 			}
 			
-			function aw_TransformA(m){
-
-				return(apollonianTransformA.multiply(m));
-			}
-
-			function aw_TransformB(m){
-
-				return(apollonianTransformB.multiply(m));
-			}
-
-			function aw_TransformC(m){
-
-				return(apollonianTransformC.multiply(m));
-			}
-
 			function aw_fillDisk(m){
-	
-				aw_drawSpheresFromMatrix(m);
-
-				const A = aw_TransformA(m);
-				const B = aw_TransformB(m);
-				const C = aw_TransformC(m);
-
-				aw_drawSpheresFromMatrix(A); //"in"
-				aw_drawSpheresFromMatrix(B); //"out right"
-				aw_drawSpheresFromMatrix(C); //"out left"
-				//aw_drawSpheresFromMatrix(C.invert()); //"in"
-				//aw_drawSpheresFromMatrix(B); //"out right"
-				//aw_drawSpheresFromMatrix(C); //"out left"
-	
-				//aw_drawSpheresFromMatrix(aw_TransformA(A));
-				//aw_drawSpheresFromMatrix(aw_TransformA(B));
-				//aw_drawSpheresFromMatrix(aw_TransformA(C));
-				//aw_drawSpheresFromMatrix(aw_TransformB(A));
-				//aw_drawSpheresFromMatrix(aw_TransformB(B));
-				//aw_drawSpheresFromMatrix(aw_TransformB(C));
-				//aw_drawSpheresFromMatrix(aw_TransformC(A));
-				//aw_drawSpheresFromMatrix(aw_TransformC(B));
-				//aw_drawSpheresFromMatrix(aw_TransformC(C));
-				//aw_drawSpheresFromMatrix(aw_TransformC(aw_TransformA(aw_TransformB(A))));
-				//aw_drawSpheresFromMatrix(aw_TransformB(aw_TransformC(aw_TransformA(A))));
-				//aw_drawSpheresFromMatrix(aw_TransformA(aw_TransformB(aw_TransformC(B))));
-				//aw_drawSpheresFromMatrix(aw_TransformC(aw_TransformA(aw_TransformB(B))));
-				//aw_drawSpheresFromMatrix(aw_TransformB(aw_TransformC(aw_TransformA(B))));
-				//aw_drawSpheresFromMatrix(aw_TransformA(aw_TransformB(aw_TransformC(C))));
-				//aw_drawSpheresFromMatrix(aw_TransformC(aw_TransformA(aw_TransformB(C))));
-				//aw_drawSpheresFromMatrix(aw_TransformB(aw_TransformC(aw_TransformA(C))));
-				//aw_drawSpheresFromMatrix(aw_TransformB(aw_TransformC(aw_TransformA(m))));
-				//aw_drawSpheresFromMatrix(aw_TransformC(aw_TransformB(aw_TransformA(m))));
-				//aw_drawSpheresFromMatrix(aw_TransformC(m));
-				//aw_drawSpheresFromMatrix(B);
-				//aw_drawSpheresFromMatrix(C);
-				//aw_drawSpheresFromMatrix(aw_TransformA(A));
-				//aw_drawSpheresFromMatrix(aw_TransformA(B));
-				//aw_drawSpheresFromMatrix(aw_TransformA(C));
-				//aw_drawSpheresFromMatrix(aw_TransformB(A));
-				//aw_drawSpheresFromMatrix(aw_TransformB(B));
-				//aw_drawSpheresFromMatrix(aw_TransformB(C));
-				//aw_drawSpheresFromMatrix(aw_TransformC(A));
-				//aw_drawSpheresFromMatrix(aw_TransformC(B));
-				//aw_drawSpheresFromMatrix(aw_TransformC(C));
+				--depth;
+				// First Step
+				var A = new THREE.Matrix4();
+				A.copy(apollonianTransformA).multiply(m);
+				var B = new THREE.Matrix4();
+				B.copy(apollonianTransformB).multiply(m);
+				var C = new THREE.Matrix4();
+				C.copy(apollonianTransformC).multiply(m);
 				
+				//Second Step (testing Recursion)
+				//var Aprime = new THREE.Matrix4();
+				//Aprime.copy(apollonianTransformA).multiply(A);
+				//var Bprime = new THREE.Matrix4();
+				//Bprime.copy(apollonianTransformB).multiply(B);
+				//var Cprime = new THREE.Matrix4();
+				//Cprime.copy(apollonianTransformC).multiply(C);
+ 			    //
+				//Only Draw the new stuff!				
+				aw_drawSphere(A.elements[3],A.elements[7],A.elements[11],A.elements[15]);
+				aw_drawSphere(B.elements[3],B.elements[7],B.elements[11],B.elements[15]);
+				aw_drawSphere(C.elements[3],C.elements[7],C.elements[11],C.elements[15]);
+
+				
+
+				//Second Step (testing recursion)
+				//aw_drawSphere(Aprime.elements[3],Aprime.elements[7],Aprime.elements[11],Aprime.elements[15]);
+				//aw_drawSphere(Bprime.elements[3],Bprime.elements[7],Bprime.elements[11],Bprime.elements[15]);
+				//aw_drawSphere(Cprime.elements[3],Cprime.elements[7],Cprime.elements[11],Cprime.elements[15]);
+				if (m.elements[3] > aw_maxiumBend){
+				}else{
+					aw_fillDisk(A);
+					aw_fillDisk(B);
+					aw_fillDisk(C);
+				}
+				return(m);
 			}
 
+			aw_drawSpheresFromMatrix(M);
 			aw_fillDisk(M);
-			
-			
+			aw_drawSpheresFromMatrix(N);
+			aw_fillDisk(N);
+			aw_drawSpheresFromMatrix(O);
+			aw_fillDisk(O);
+			aw_drawSpheresFromMatrix(P);
+			aw_fillDisk(P);
+
+
 			scene.add( group ) 
 			// Moving the Camera Out
-			camera.position.z = 7;
+			camera.position.z = 5;
 
 			// Animating with framerate of the browser
-			
 			function animate() {
 			requestAnimationFrame( animate );
 			renderer.render( scene, camera );
