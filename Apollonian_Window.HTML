@@ -16,7 +16,7 @@
 			const aw_renderWidth = aw_renderHeight; // smothness of spheres
 			//const whirl = 90; //degrees cycled for color hue
 			const group = new THREE.Group();
-			const aw_maxiumBend = 100; // maximum bend for a recursively drawn pappus chain
+			const aw_maxiumBend = 200; // maximum bend for a recursively drawn pappus chain
 			var depth = 100; // how deep into the generating recursion we want to go.
 
 
@@ -33,29 +33,17 @@
 			//Create our Matrix of "Circle" coordinates for each quadrant in 2D
 			const M = new THREE.Matrix4();
 			const N = new THREE.Matrix4();
-			const O = new THREE.Matrix4();
-			const P = new THREE.Matrix4();
 
 			M.set(
 				2, 1, 0, 0,
-			    3, 0, 2, 0,
+			    2, -1, 0, 0,
  			    -1, 0, 0, 0,
- 			    6, 3, 4, 0,);
+ 			    3, 0, 2, 0,);
 			N.set(
 				2, 1, 0, 0,
-			    3, 0, -2, 0,
+			    2, -1, 0, 0,
  			    -1, 0, 0, 0,
- 			    6, 3, -4, 0,);
-			O.set(
-				2, -1, 0, 0,
-			    3, 0, 2, 0,
- 			    -1, 0, 0, 0,
- 			    6, -3, 4, 0,);
-			P.set(
-				2, -1, 0, 0,
-			    3, 0, -2, 0,
- 			    -1, 0, 0, 0,
- 			    6, -3, -4, 0,);
+ 			    3, 0, -2, 0,);
 
 			//Boyd's Tranformations 
 			const apollonianTransformA = new THREE.Matrix4();
@@ -153,10 +141,6 @@
 			aw_fillDisk(M);
 			aw_drawSpheresFromMatrix(N);
 			aw_fillDisk(N);
-			aw_drawSpheresFromMatrix(O);
-			aw_fillDisk(O);
-			aw_drawSpheresFromMatrix(P);
-			aw_fillDisk(P);
 
 
 			scene.add( group ) 
@@ -167,8 +151,8 @@
 			function animate() {
 			requestAnimationFrame( animate );
 			renderer.render( scene, camera );
-			//group.rotation.x += 0.01;
-			//group.rotation.y += 0.01;
+			group.rotation.x += 0.01;
+			group.rotation.y += 0.01;
 			}
 			
 			animate();
