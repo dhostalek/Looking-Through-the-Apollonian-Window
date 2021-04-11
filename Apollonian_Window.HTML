@@ -9,6 +9,7 @@
 	</head>
 	<body>
 		<script src="js/three.js"></script>
+        <script src="./js/controls/OrbitControls.js"></script>
 		<script>
 
 			//Constants
@@ -16,19 +17,22 @@
 			const aw_renderWidth = aw_renderHeight; // smothness of spheres
 			//const whirl = 90; //degrees cycled for color hue
 			const group = new THREE.Group();
-			const aw_maxiumBend = 200; // maximum bend for a recursively drawn pappus chain
+			const aw_maxiumBend = 500; // maximum bend for a recursively drawn pappus chain
 			var depth = 100; // how deep into the generating recursion we want to go.
 
-
-			// Setting the Scene... 
-			const scene = new THREE.Scene();
-			//scene.background = 0xFFFFFF
-			const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 1000 );
-			
 			// Rendering the Renderer 
 			const renderer = new THREE.WebGLRenderer();
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.body.appendChild( renderer.domElement );
+
+			// Setting the Scene... 
+			const scene = new THREE.Scene();
+			// and camemera
+			const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 1000 );
+			//and controls
+    		// Adding our Orbital Controller
+    		controls = new THREE.OrbitControls (camera, renderer.domElement);
+			
 
 			//Create our Matrix of "Circle" coordinates for each quadrant in 2D
 			const M = new THREE.Matrix4();
@@ -81,9 +85,10 @@
 				const material = new THREE.MeshNormalMaterial( { transparent: true, opacity: .25 } );
 				const sphere = new THREE.Mesh( euclidean_geometry, material );
 	
-		    	sphere.position.x = aw_x/aw_r;
-		    	sphere.position.y = aw_y/aw_r;
-		    	sphere.position.z = aw_z/aw_r;
+//		    	sphere.position.x = aw_x/aw_r;
+//		    	sphere.position.y = aw_y/aw_r;
+//		    	sphere.position.z = aw_z/aw_r;
+		    	sphere.position.set (aw_x/aw_r, aw_y/aw_r, aw_z/aw_r);
 				
 				group.add(sphere);
 	
@@ -100,7 +105,6 @@
 			}
 			
 			function aw_fillDisk(m){
-				--depth;
 				// First Step
 				var A = new THREE.Matrix4();
 				A.copy(apollonianTransformA).multiply(m);
@@ -142,6 +146,12 @@
 			aw_drawSpheresFromMatrix(N);
 			aw_fillDisk(N);
 
+			//Test cases for drawing 6 x-axis spheres in 3D Window
+			//aw_drawSphere(3,0,1,Math.sqrt(3))
+			//aw_drawSphere(3,0,-1,Math.sqrt(3))
+			//aw_drawSphere(3,0,1,-1*Math.sqrt(3))
+			//aw_drawSphere(3,0,-1,-1*Math.sqrt(3))
+
 
 			scene.add( group ) 
 			// Moving the Camera Out
@@ -151,8 +161,9 @@
 			function animate() {
 			requestAnimationFrame( animate );
 			renderer.render( scene, camera );
-			group.rotation.x += 0.01;
-			group.rotation.y += 0.01;
+			controls.update();
+			//group.rotation.x += 0.01;
+			//group.rotation.y += 0.01;
 			}
 			
 			animate();
