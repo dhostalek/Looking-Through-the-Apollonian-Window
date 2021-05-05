@@ -8,8 +8,8 @@
 		</style>
 	</head>
 	<body>
-		<script src="js/three.js"></script>
-        <script src="./js/controls/OrbitControls.js"></script>
+		<script src="./js/three.js"></script>
+        <script src="./js/controls/TrackballControls.js"></script>
 		<script>
 
 			//Constants
@@ -17,7 +17,7 @@
 			const aw_renderWidth = aw_renderHeight; // smothness of spheres
 			//const whirl = 90; //degrees cycled for color hue
 			const group = new THREE.Group();
-			const aw_maxiumBend = 500; // maximum bend for a recursively drawn pappus chain
+			const aw_maxiumBend = 100; // maximum bend for a recursively drawn pappus chain
 			var depth = 100; // how deep into the generating recursion we want to go.
 
 			// Rendering the Renderer 
@@ -31,7 +31,7 @@
 			const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 1000 );
 			//and controls
     		// Adding our Orbital Controller
-    		controls = new THREE.OrbitControls (camera, renderer.domElement);
+    		controls = new THREE.TrackballControls (camera, renderer.domElement);
 			
 
 			//Create our Matrix of "Circle" coordinates for each quadrant in 2D
@@ -147,10 +147,10 @@
 			aw_fillDisk(N);
 
 			//Test cases for drawing 6 x-axis spheres in 3D Window
-			//aw_drawSphere(3,0,1,Math.sqrt(3))
-			//aw_drawSphere(3,0,-1,Math.sqrt(3))
-			//aw_drawSphere(3,0,1,-1*Math.sqrt(3))
-			//aw_drawSphere(3,0,-1,-1*Math.sqrt(3))
+			aw_drawSphere(3,0,1,Math.sqrt(3))
+			aw_drawSphere(3,0,-1,Math.sqrt(3))
+			aw_drawSphere(3,0,1,-1*Math.sqrt(3))
+			aw_drawSphere(3,0,-1,-1*Math.sqrt(3))
 
 
 			scene.add( group ) 
