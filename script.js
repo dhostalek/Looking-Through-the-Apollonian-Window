@@ -1,54 +1,78 @@
-// Define the main function
-function main() {
-  // Define the width and height of the SVG element
-  var width = window.innerWidth;
-  var height = window.innerHeight;
-  
-  // Create the SVG element
-  var svg = d3.select("body")
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height);
-  
-  // Define the initial Apollonian gasket parameters
-  var a = 1;
-  var b = 1;
-  var c = Math.sqrt(2);
-  var k = 1;
-  
-  // Define the function to compute the next set of circles
-  function computeNext(x, y, r) {
-    // Compute the three new radii
-    var r1 = (r / (k + 1)) * k;
-    var r2 = (r / (k + 1)) * (k + 1 - a - b - c);
-    var r3 = (r / (k + 1)) * (k + 1 - a - b + c);
-    
-    // Compute the three new circle positions
-    var x1 = x + r + r1;
-    var y1 = y;
-    var x2 = x + r * Math.cos(2 * Math.PI * a / (k + 1)) + r2 * Math.cos(2 * Math.PI * (a + b) / (k + 1));
-    var y2 = y + r * Math.sin(2 * Math.PI * a / (k + 1)) + r2 * Math.sin(2 * Math.PI * (a + b) / (k + 1));
-    var x3 = x + r * Math.cos(2 * Math.PI * (a + c) / (k + 1)) + r3 * Math.cos(2 * Math.PI * (a + b + c) / (k + 1));
-    var y3 = y + r * Math.sin(2 * Math.PI * (a + c) / (k + 1)) + r3 * Math.sin(2 * Math.PI * (a + b + c) / (k + 1));
-    
-    // Increment the value of k
-    k++;
-    
-    // Draw the three new circles
-    svg.append("circle")
-      .attr("cx", x1)
-      .attr("cy", y1)
-      .attr("r", r1)
-      .attr("fill", "none")
-      .attr("stroke", "#fff")
-      .attr("stroke-width", "1px");
-    svg.append("circle")
-      .attr("cx", x2)
-      .attr("cy", y2)
-      .attr("r", r2)
-      .attr("fill", "none")
-      .attr("stroke", "#fff")
-      .attr("stroke-width", "1px");
-    svg.append("circle")
-      .attr("cx", x3)
-      .attr("cy", y3)
+function ApollonianGasket(svg, viewportWidth, viewportHeight) {
+  this.svg = svg;
+  this.viewportWidth = viewportWidth;
+  this.viewportHeight = viewportHeight;
+  this.circles = [];
+  this.currentDepth = 0;
+  this.maxDepth = 100;
+
+  // Define the initial circle that generates the Apollonian gasket
+  this.addCircle({
+    x: this.viewportWidth / 2,
+    y: this.viewportHeight / 2,
+    r: this.viewportHeight / 2 - 10
+  });
+}
+
+ApollonianGasket.prototype.addCircle = function(circle) {
+  this.circles.push(circle);
+  this.currentDepth++;
+
+  // Recursively generate the Apollonian gasket
+  if (this.currentDepth < this.maxDepth && circle.r >= 1) {
+    var a = circle.a || 1;
+    var b = circle.b || 1;
+    var c = circle.c || 1;
+
+    this.addCircle({
+      x: circle.x + circle.r / 2 * (a - b + c),
+      y: circle.y + circle.r / 2 * (a + b - c),
+      r: circle.r / 2,
+      a: a + 1,
+      b: b,
+      c: c
+    });
+
+    this.addCircle({
+      x: circle.x + circle.r / 2 * (-a - b + c),
+      y: circle.y + circle.r / 2 * (a - b + c),
+      r: circle.r / 2,
+      a: a,
+      b: b + 1,
+      c: c
+    });
+
+    this.addCircle({
+      x: circle.x + circle.r / 2 * (-a + b + c),
+      y: circle.y + circle.r / 2 * (-a + b + c),
+      r: circle.r / 2,
+      a: a,
+      b: b,
+      c: c + 1
+    });
+  }
+};
+
+ApollonianGasket.prototype.update = function() {
+  var self = this;
+
+  // Calculate the bounding box of the visible area
+  var boundingBox = {
+    x1: d3.event.translate[0],
+    y1: d3.event.translate[1],
+    x2: d3.event.translate[0] + this.viewportWidth / d3.event.scale,
+    y2: d3.event.translate[1] + this.viewportHeight / d3.event.scale
+  };
+
+  // Generate only the circles that intersect with the bounding box
+  var circles = this.svg.selectAll("circle")
+    .data(this.circles.filter(function(circle) {
+      return intersects(circle, boundingBox);
+    }));
+
+  circles.enter()
+    .append("circle")
+    .attr("cx", function(d) { return d.x; })
+    .attr("cy", function(d) { return d.y; })
+    .attr("r", function(d) { return d.r; })
+    .style("fill", "
